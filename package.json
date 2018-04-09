@@ -4,7 +4,7 @@
   "description": "Todo Rest api",
   "main": "index.js",
   "scripts": {
-    "test": "mocha Server/**/*.test.js",
+    "test": "mocha --timeout=4000 Server/**/*.test.js",
     "test-watch": "nodemon --exec npm test"
   },
   "author": "",
