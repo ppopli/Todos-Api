@@ -1,14 +1,17 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todos');
 
 const todos = [
   {
+    _id : new ObjectID(),
     text : "Something to cook"
   },
   {
+    _id : new ObjectID(),
     text : "Something to eat"
   }
 ];
@@ -75,5 +78,40 @@ describe('GET /todos', () => {
         expect(res.body.todos.length).toBe(2);
       })
       .end(() => done());
+  });
+});
+
+
+describe('GET /todos/:id', () => {
+
+  it('Should get todo related to id sent', (done) =>{
+
+    request(app)
+      .get(`/todos/${todos[0]._id.toHexString()}`)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(todos[0].text);
+      })
+      .end(() => done());
+  });
+
+  it('Should get error saying no data', (done) => {
+
+    request(app)
+      .get(`/todos/${new ObjectID().toHexString()}`)
+      .expect(404)
+      .expect((res) => {
+        expect(res.body.error).toBe("no data");
+      })
+      .end(() => done());
+  });
+
+  it('Should return 404  and empty response', (done) => {
+    request(app)
+    .get('/todos/123')
+    .expect(404)
+    .expect((res) => {
+      expect({}).toBe({});
+    })
+    .end(() => done());
   });
 });
