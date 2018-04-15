@@ -115,3 +115,35 @@ describe('GET /todos/:id', () => {
     .end(() => done());
   });
 });
+
+describe('DELETE/todos/:id', () =>{
+
+  it('Should remove a todo', (done) => {
+    request(app)
+      .delete(`/todos/${todos[0]._id.toHexString()}`)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(todos[0].text);
+      })
+      .end(() => done());
+    });
+
+  it('Should get error while deleting saying no data', (done) => {
+
+    request(app)
+      .delete(`/todos/${new ObjectID().toHexString()}`)
+      .expect(404)
+      .expect((res) => {
+        expect(res.body.error).toBe("no data");
+      }).end(() => done());
+  });
+
+  it('Should return 404  and empty response while deleting todo', (done) => {
+    request(app)
+    .delete('/todos/123')
+    .expect(404)
+    .expect((res) => {
+      expect({}).toBe({});
+    }).end(() => done());
+  });
+
+});
