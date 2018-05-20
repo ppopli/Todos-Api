@@ -37,7 +37,6 @@ app.get('/todos', (req, res) => {
 
 app.get('/todos/:id', (req, res) => {
     let id = req.params.id;
-    console.log(id);
     if(!ObjectID.isValid(id)) {
       return res.status(404).send({});
     }
@@ -94,6 +93,20 @@ app.patch('/todos/:id', (req, res) =>{
        return res.status(404).send();
     });
 
+});
+
+app.post('/users', (req, res) => {
+  let body = _.pick(req.body, ['email', 'password']);
+
+  let user = new User(body);
+
+  user.save().then(() => {
+    return user.getAuthToken();
+  }).then((token) => {
+    res.header('x-auth', token).send(user);
+  }).catch((err)=>{
+    res.status(400).send(err);
+  });
 });
 
 app.listen(3000, () => {

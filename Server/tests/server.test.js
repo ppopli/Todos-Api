@@ -4,6 +4,7 @@ const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todos');
+const {User} = require('./../models/users');
 
 const todos = [
   {
@@ -26,6 +27,14 @@ beforeEach((done) => {
     return err;
   });
 });
+
+// beforeEach((done) => {
+//   User.remove({}).then(() =>done)
+//     .catch((err) => {
+//       return err;
+//     })
+//   }
+// })
 
 describe('POST /todos', () => {
 
@@ -187,4 +196,39 @@ describe('PATCH/todos/:id', () => {
       .end(() => done());
 
   });
+});
+
+describe('POST/users', () => {
+  it('Should create a new user', (done) => {
+    User.remove({}).then(()=>{ console.log('removed users')})
+      .catch((err) => {
+        return err;
+      })
+
+    request(app)
+      .post(`/users`)
+      .send({
+        email : 'abc@123',
+        password : 'abc123456'
+      })
+      .expect(200)
+      .expect((res) => {
+        console.log(res);
+        expect(res.body.message).toBe('successful');
+      })
+      .end(() => done())
+  });
+
+  it('Should return a duplication error', (done) => {
+
+    request(app)
+      .post(`/users`)
+      .send({
+        email : 'abc@123',
+        password : 'abc123456'
+      })
+      .expect(400)
+      .end(()=>done());
+  });
+
 });
