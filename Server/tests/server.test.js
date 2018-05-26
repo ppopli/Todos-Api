@@ -6,35 +6,10 @@ const {app} = require('./../server');
 const {Todo} = require('./../models/todos');
 const {User} = require('./../models/users');
 
-const todos = [
-  {
-    _id : new ObjectID(),
-    text : "Something to cook"
-  },
-  {
-    _id : new ObjectID(),
-    text : "Something to eat",
-    completed : true,
-    completedAt : 3333
-  }
-];
+const {todos, populateData, users, populateUsers} = require('./seed/seed');
 
-beforeEach((done) => {
-  Todo.remove({}).then(() => {
-    return Todo.insertMany(todos);
-  }).then(() => done())
-  .catch((err) => {
-    return err;
-  });
-});
-
-// beforeEach((done) => {
-//   User.remove({}).then(() =>done)
-//     .catch((err) => {
-//       return err;
-//     })
-//   }
-// })
+beforeEach(populateUsers);
+beforeEach(populateData);
 
 describe('POST /todos', () => {
 
@@ -231,4 +206,25 @@ describe('POST/users', () => {
       .end(()=>done());
   });
 
+  it('Should return user if authenticated', (done) => {
+
+    request(app)
+      .get('/users/me')
+      .set('x-auth', users[0].tokens[0].token)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body._id).toBe(users[0]._id.toHexString());
+        expect(res.body.email).toBe(users[0].email);
+      }).end(done);
+  });
+
+  it('Should return 401 if not authenticated', (done) => {
+
+    request(app)
+      .get('/users/me')
+      .expect(401)
+      .expect((res) => {
+        expect(res.body).toEqual({});
+      }).end(done);
+    });
 });
