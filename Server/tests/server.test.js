@@ -175,7 +175,7 @@ describe('PATCH/todos/:id', () => {
 
 describe('POST/users', () => {
   it('Should create a new user', (done) => {
-    User.remove({}).then(()=>{ console.log('removed users')})
+    User.remove({}).then(()=>{})
       .catch((err) => {
         return err;
       })
@@ -188,7 +188,6 @@ describe('POST/users', () => {
       })
       .expect(200)
       .expect((res) => {
-        console.log(res);
         expect(res.body.message).toBe('successful');
       })
       .end(() => done())
@@ -227,4 +226,65 @@ describe('POST/users', () => {
         expect(res.body).toEqual({});
       }).end(done);
     });
+});
+
+describe('POST/users/login', () => {
+  it('Should login user and return token', (done) => {
+    request(app)
+      .post('/users/login')
+      .send({
+        'email' : users[1].email,
+        'password': users[1].password
+      })
+      .expect(200)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toBeTruthy();
+      })
+      .end((err, res) => {
+        if(err) {
+          return done(err);
+        }
+
+        User.findById(users[1]._id).then((user) => {
+          expect(user.tokens[0]).toMatchObject({
+            access : 'auth',
+            token: res.header['x-auth']
+          });
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+
+  it('Should not login and should not return token', (done) => {
+    request(app)
+      .post('/users/login')
+      .send({
+        'email' : users[1].email,
+        'password' : 'abcd'
+      })
+      .expect(400)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toBeFalsy();
+      })
+      .end(done);
+  });
+});
+
+describe('DELETE /users/me/token', () => {
+  it('Should return 200 and delete the token used', (done) => {
+    request(app)
+      .delete('/users/me/token')
+      .set('x-auth', users[0].tokens[0].token)
+      .expect(200)
+      .end((err, res) => {
+        if(err) {
+          return done(err);
+        }
+
+        User.findById(users[0]._id).then((user) => {
+          expect(user.tokens.length).toBe(0);
+          done();
+        }).catch((e) => done(e));
+      })
+  });
 });
