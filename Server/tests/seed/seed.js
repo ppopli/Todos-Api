@@ -3,19 +3,6 @@ const jwt = require('jsonwebtoken');
 const {Todo} = require('./../../models/todos');
 const {User} = require('./../../models/users');
 
-const todos = [
-  {
-    _id : new ObjectID(),
-    text : "Something to cook"
-  },
-  {
-    _id : new ObjectID(),
-    text : "Something to eat",
-    completed : true,
-    completedAt : 3333
-  }
-];
-
 const userOneID = new ObjectID();
 const userTwoID = new ObjectID();
 
@@ -32,9 +19,29 @@ const users = [
   {
     _id : userTwoID,
     email : 'def@gmail.com',
-    password : 'userTwoPass'
+    password : 'userTwoPass',
+    tokens : [{
+      access: 'auth',
+      token : jwt.sign({_id: userTwoID, access:'auth'}, 'pulkit').toString()
+    }]
   }
 ];
+
+const todos = [
+  {
+    _id : new ObjectID(),
+    text : "Something to cook",
+    _creator : userOneID
+  },
+  {
+    _id : new ObjectID(),
+    text : "Something to eat",
+    completed : true,
+    completedAt : 3333,
+    _creator : userTwoID
+  }
+];
+
 
 const populateData = (done) => {
   Todo.remove({}).then(() => {

@@ -39,7 +39,6 @@ userSchema.methods.getAuthToken = function() {
   let user = this;
   let access = 'auth';
   let token = jwt.sign({_id : user._id.toHexString(), access}, 'pulkit').toString();
-
   user.tokens.push({access, token});
 
   return user.save().then(() => {
@@ -101,9 +100,8 @@ userSchema.statics.findByCredentials = function(email, password) {
   });
 };
 
-userSchema.pre('save', function(next){
+userSchema.pre('save', function(next) {
   let user = this;
-
   if(user.isModified('password')) {
     bcrypt.genSalt(10, (err, salt) => {
       bcrypt.hash(user.password, salt, (err, hash) => {
